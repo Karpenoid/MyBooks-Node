@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
+
+enum ReadStatus {
+  PLANNED
+  READING
+  COMPLETED
+}
+
+
+// Models
+model User {
+  id           String       @id @default(uuid())
+  email        String       @unique
+  name         String
+  passwordHash String?
+  authProvider AuthProvider @default(LOCAL)
+  providerId   String?      @unique
+  createdAt    DateTime     @default(now())
+
+  bookshelves  Bookshelf[]
+  reviews      Review[]
+}
+
+model Book {
+  id          String    @id @default(uuid())
+  title       String
+  author      String
+  description String?   @db.Text
+  releaseDate DateTime? @db.Date
+  pages       Int?
+
+  genres      Genre[]
+  shelfItems  BookshelfItem[]
+  reviews     Review[]
+}
+
+model Genre {
+  id    String @id @default(uuid())
+  name  String @unique
+  
+  books Book[]
+}
+
+model Bookshelf {
+  id        String  @id @default(uuid())
+  userId    String  
+  name      String
+  isDefault Boolean @default(false)
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     BookshelfItem[]
+}
+
+model BookshelfItem {
+  id          String     @id @default(uuid())
+  bookshelfId String
+  bookId      String
+  readStatus  ReadStatus @default(PLANNED)
+  isFavorite  Boolean    @default(false)
+  addedAt     DateTime   @default(now())
+  bookshelf   Bookshelf  @relation(fields: [bookshelfId], references: [id], onDelete: Cascade)
+  book        Book       @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([bookshelfId, bookId])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  bookId    String
+  rating    Int
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+}
