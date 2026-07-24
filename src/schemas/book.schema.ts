@@ -12,7 +12,10 @@ export const bookSchema = z.object({
   genreIds: z.array(z.string().uuid("Invalid genre ID format")).min(1, "At least one genre is required"),
 });
 
-export const updateBookSchema = bookSchema.partial();
+export const updateBookSchema = bookSchema.partial().refine(
+  (data) => Object.values(data).some((v) => v !== undefined),
+  { message: "At least one field must be provided" }
+);
 
 export type BookDto = z.infer<typeof bookSchema>;
 export type UpdateBookDto = z.infer<typeof updateBookSchema>;

@@ -20,7 +20,10 @@ export const bookService = {
       include: { genres: true },
     });
     if (!book) throw new ApiError(404, "Book not found");
-    return book;
+    return {
+      ...book,
+      releaseDate: book.releaseDate?.toISOString().split("T")[0] ?? null,
+    };
   },
 
   createBook: async (data: BookDto) => {
@@ -39,7 +42,8 @@ export const bookService = {
         genres: {
           connect: data.genreIds.map((id) => ({ id })), 
         },
-      }
+      },
+      include: { genres: true },
     });
     return createdBook;
   },
@@ -60,6 +64,7 @@ export const bookService = {
           genres: { set: data.genreIds.map((genreId) => ({ id: genreId })) },
         }),
       },
+      include: { genres: true },
     });
     return updatedBook;
   },

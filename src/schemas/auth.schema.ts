@@ -11,5 +11,11 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+export const updateUserSchema = registerSchema.partial().refine(
+  (data) => Object.values(data).some((v) => v !== undefined),
+  { message: "At least one field must be provided" }
+);
+
 export type RegisterDto = z.infer<typeof registerSchema>;
 export type LoginDto = z.infer<typeof loginSchema>;
+export type UpdateUserDto = z.infer<typeof updateUserSchema>;
