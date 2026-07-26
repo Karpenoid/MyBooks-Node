@@ -9,7 +9,12 @@ export const bookSchema = z.object({
     .int("Pages must be an integer")
     .positive("Pages must be greater than zero")
     .optional(),
-  genreIds: z.array(z.string().uuid("Invalid genre ID format")).min(1, "At least one genre is required"),
+  genreIds: z.array(z.string().uuid("Invalid genre ID format"))
+    .min(1, "At least one genre is required")
+    .refine(
+      (ids) => new Set(ids).size === ids.length,
+      { message: "Genre IDs must be unique" }
+    ),
 });
 
 export const updateBookSchema = bookSchema.partial().refine(

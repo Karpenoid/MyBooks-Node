@@ -32,6 +32,11 @@ export const bookService = {
     });
     if (existing) throw new ApiError(409, "Book already exists");
 
+    const genres = await prisma.genre.findMany({
+      where: { id: { in: data.genreIds } },
+    });
+    if (genres.length !== data.genreIds.length) throw new ApiError(404, "One or more genres not found");
+
     const createdBook = await prisma.book.create({
       data: {
         title: data.title,
@@ -51,6 +56,13 @@ export const bookService = {
   updateBook: async (id: string, data: UpdateBookDto) => {
     const existing = await prisma.book.findUnique({ where: { id } });
     if (!existing) throw new ApiError(404, "Book not found");
+
+    if (data.genreIds !== undefined) {
+      const genres = await prisma.genre.findMany({
+        where: { id: { in: data.genreIds } },
+      });
+      if (genres.length !== data.genreIds.length) throw new ApiError(404, "One or more genres not found");
+    }
 
     const updatedBook = await prisma.book.update({
       where: { id },
