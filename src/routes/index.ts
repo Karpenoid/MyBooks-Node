@@ -4,6 +4,7 @@ import authRouter from "./auth.routes.js";
 import userRouter from "./user.routes.js";
 import genreRouter from "./genre.routes.js";
 import bookshelfRouter from "./bookshelf.routes.js";
+import reviewRouter from "./review.routes.js";
 
 const router = Router();
 
@@ -12,5 +13,6 @@ router.use("/auth", authRouter);
 router.use("/users", userRouter);
 router.use("/genres", genreRouter);
 router.use("/bookshelves", bookshelfRouter);
+router.use("/books/:bookId/reviews", reviewRouter);
 
 export default router;
