@@ -5,8 +5,10 @@ import userRouter from "./user.routes.js";
 import genreRouter from "./genre.routes.js";
 import bookshelfRouter from "./bookshelf.routes.js";
 import reviewRouter from "./review.routes.js";
+import { requestLimit } from "../middlewares/ratelimit.middleware.js";
 
 const router = Router();
+router.use(requestLimit)
 
 router.use("/books", bookRouter);
 router.use("/auth", authRouter);

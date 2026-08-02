@@ -1,8 +1,12 @@
 import { PORT } from "./env.js";
 import app from "./app.js";
 import { prisma } from "./lib/prisma.js";
+import { redisClient } from "./lib/redis.js";
 
 async function startServer() {
+  await redisClient.connect();
+  console.log("Redis connected successfully")
+  
   await prisma.$connect();
   console.log("Connected to the database");
 
