@@ -42,7 +42,8 @@ export const bookService = {
     const genres = await prisma.genre.findMany({
       where: { id: { in: data.genreIds } },
     });
-    if (genres.length !== data.genreIds.length) throw new ApiError(404, "One or more genres not found");
+    if (genres.length !== data.genreIds.length)
+      throw new ApiError(404, "One or more genres not found");
 
     const createdBook = await prisma.book.create({
       data: {
@@ -52,7 +53,7 @@ export const bookService = {
         ...(data.pages !== undefined && { pages: data.pages }),
         ...(data.releaseDate !== undefined && { releaseDate: new Date(data.releaseDate) }),
         genres: {
-          connect: data.genreIds.map((id) => ({ id })), 
+          connect: data.genreIds.map((id) => ({ id })),
         },
       },
       include: { genres: true },
@@ -70,7 +71,8 @@ export const bookService = {
       const genres = await prisma.genre.findMany({
         where: { id: { in: data.genreIds } },
       });
-      if (genres.length !== data.genreIds.length) throw new ApiError(404, "One or more genres not found");
+      if (genres.length !== data.genreIds.length)
+        throw new ApiError(404, "One or more genres not found");
     }
 
     const updatedBook = await prisma.book.update({
@@ -102,5 +104,5 @@ export const bookService = {
     await invalidate(BOOKS_CACHE_KEY);
     await invalidate(BOOK_CACHE_KEY(id));
     return removedBook;
-  }
+  },
 };

@@ -1,5 +1,11 @@
 import { Router } from "express";
-import { deleteGenre, getGenreById, getGenres, patchGenre, postGenre } from "../controllers/genre.controller.js";
+import {
+  deleteGenre,
+  getGenreById,
+  getGenres,
+  patchGenre,
+  postGenre,
+} from "../controllers/genre.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 const router = Router();

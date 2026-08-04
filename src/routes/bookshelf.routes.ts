@@ -1,6 +1,16 @@
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
-import { addShelfItem, deleteShelf, deleteShelfItem, getShelfById, getShelfItems, getShelves, patchShelf, patchShelfItem, postShelf } from "../controllers/bookshelf.controller.js";
+import {
+  addShelfItem,
+  deleteShelf,
+  deleteShelfItem,
+  getShelfById,
+  getShelfItems,
+  getShelves,
+  patchShelf,
+  patchShelfItem,
+  postShelf,
+} from "../controllers/bookshelf.controller.js";
 
 const router = Router();
 router.use(authMiddleware);

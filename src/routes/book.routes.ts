@@ -1,5 +1,11 @@
 import { Router } from "express";
-import { deleteBook, getBookById, getBooks, patchBook, postBook } from "../controllers/book.controller.js";
+import {
+  deleteBook,
+  getBookById,
+  getBooks,
+  patchBook,
+  postBook,
+} from "../controllers/book.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 const router = Router();
