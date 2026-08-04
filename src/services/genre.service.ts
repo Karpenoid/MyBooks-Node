@@ -1,8 +1,8 @@
 import { prisma } from "../lib/prisma.js";
 import { ApiError } from "../utils/ApiError.js";
 import type { GenreDto } from "../schemas/genre.schema.js";
-import { redisClient } from "../lib/redis.js";
 import { BOOKS_CACHE_KEY } from "./book.service.js";
+import { cached, invalidate } from "../utils/redisWrap.js";
 
 const CACHE_TTL = 60 * 60;
 const GENRES_CACHE_KEY = "genres:all";
@@ -10,24 +10,18 @@ const GENRE_CACHE_KEY = (id: string) => `genres:${id}`;
 
 export const genreService = {
     getAll: async () => {
-        const cached = await redisClient.get(GENRES_CACHE_KEY);
-        if (cached) return JSON.parse(cached);
-    
-        const genres = await prisma.genre.findMany();
-
-        await redisClient.set(GENRES_CACHE_KEY, JSON.stringify(genres), { EX: CACHE_TTL });
-        return genres;
+        return cached(GENRES_CACHE_KEY, CACHE_TTL, async () => {
+            const genres = await prisma.genre.findMany();
+            return genres;
+        });
     },
 
     getById: async (id: string) => {
-        const cached = await redisClient.get(GENRE_CACHE_KEY(id));
-        if (cached) return JSON.parse(cached);
-
-        const genre = await prisma.genre.findUnique({ where: { id } });
-        if (!genre) throw new ApiError(404, "Genre not found");
-
-        await redisClient.set(GENRE_CACHE_KEY(id), JSON.stringify(genre), { EX: CACHE_TTL });
-        return genre;
+        return cached(GENRE_CACHE_KEY(id), CACHE_TTL, async () => {
+            const genre = await prisma.genre.findUnique({ where: { id } });
+            if (!genre) throw new ApiError(404, "Genre not found");
+            return genre;
+        });
     },
 
     createGenre: async (data: GenreDto) => {
@@ -36,7 +30,7 @@ export const genreService = {
 
         const createdGenre = await prisma.genre.create({ data });
 
-        await redisClient.del(GENRES_CACHE_KEY);
+        await invalidate(GENRES_CACHE_KEY);
         return createdGenre;
     },
 
@@ -46,9 +40,9 @@ export const genreService = {
 
         const updatedGenre = await prisma.genre.update({ where: { id }, data });
 
-        await redisClient.del(GENRES_CACHE_KEY);
-        await redisClient.del(GENRE_CACHE_KEY(id));
-        await redisClient.del(BOOKS_CACHE_KEY);
+        await invalidate(GENRES_CACHE_KEY);
+        await invalidate(GENRE_CACHE_KEY(id));
+        await invalidate(BOOKS_CACHE_KEY);
         return updatedGenre;
     },
 
@@ -58,9 +52,9 @@ export const genreService = {
 
         const deletedGenre = await prisma.genre.delete({ where: {id} });
 
-        await redisClient.del(GENRES_CACHE_KEY);
-        await redisClient.del(GENRE_CACHE_KEY(id));
-        await redisClient.del(BOOKS_CACHE_KEY);
+        await invalidate(GENRES_CACHE_KEY);
+        await invalidate(GENRE_CACHE_KEY(id));
+        await invalidate(BOOKS_CACHE_KEY);
         return deletedGenre;
     }
-}
+};
