@@ -73,6 +73,11 @@ export const bookShelfService = {
     const book = await prisma.book.findUnique({ where: { id: bookId } });
     if (!book) throw new ApiError(404, "Book not found");
 
+    const existingItem = await prisma.bookshelfItem.findUnique({
+      where: { bookshelfId_bookId: { bookshelfId: id, bookId } },
+    });
+    if (existingItem) throw new ApiError(409, "This book is already on the bookshelf");
+
     const newItem = await prisma.bookshelfItem.create({ data: { bookshelfId: id, bookId } });
     return newItem;
   },
@@ -102,6 +107,11 @@ export const bookShelfService = {
     const existing = await prisma.bookshelf.findUnique({ where: { id } });
     if (!existing) throw new ApiError(404, "Bookshelf not found");
     if (existing.userId !== userId) throw new ApiError(403, "Forbidden");
+
+    const book = await prisma.bookshelfItem.findUnique({
+      where: { bookshelfId_bookId: { bookshelfId: id, bookId } },
+    });
+    if (!book) throw new ApiError(404, "Book not found in this bookshelf");
 
     const removedItem = await prisma.bookshelfItem.delete({
       where: { bookshelfId_bookId: { bookshelfId: id, bookId } },

@@ -67,6 +67,6 @@ export const patchShelfItem = catchAsync(async (req: Request, res: Response) => 
 
 export const deleteShelfItem = catchAsync(async (req: Request, res: Response) => {
   const { id, bookId } = req.params as { id: string; bookId: string };
-  const deletedItem = await bookShelfService.removeItem(id, req.user.id, bookId);
+  const deletedItem = await bookShelfService.removeItem(id, bookId, req.user.id);
   res.status(200).json(deletedItem);
 });
