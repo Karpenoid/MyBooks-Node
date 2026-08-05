@@ -7,4 +7,14 @@ import eslintConfigPrettier from "eslint-config-prettier";
 export default defineConfig([
   { files: ["**/*.{js,mjs,cjs,ts,mts,cts}"], plugins: { js }, extends: ["js/recommended"], languageOptions: { globals: globals.browser } },
   tseslint.configs.recommended, eslintConfigPrettier,
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^next$"
+        }
+      ]
+    }
+  }
 ]);

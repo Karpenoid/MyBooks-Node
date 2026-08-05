@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { ApiError } from "../utils/ApiError.js";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const errorMiddleware = (err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof ApiError) {
     res.status(err.statusCode).json({ message: err.message });
