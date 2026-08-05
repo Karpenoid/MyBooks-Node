@@ -1,11 +1,15 @@
 import type { Request, Response } from "express";
 import { bookService } from "../services/book.service.js";
 import { catchAsync } from "../utils/catchAsync.js";
-import { bookSchema, updateBookSchema } from "../schemas/book.schema.js";
+import { bookQuerySchema, bookSchema, updateBookSchema } from "../schemas/book.schema.js";
 import { ApiError } from "../utils/ApiError.js";
 
 export const getBooks = catchAsync(async (req: Request, res: Response) => {
-  const books = await bookService.getAll();
+  const parsed = bookQuerySchema.safeParse(req.query);
+  if (!parsed.success) throw new ApiError(400, parsed.error.issues[0]?.message ?? "Validation error");
+
+  const { page, limit } = parsed.data;
+  const books = await bookService.getAll(page, limit);
   res.status(200).json(books);
 });
 

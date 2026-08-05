@@ -1,5 +1,10 @@
 import z from "zod";
 
+export const bookQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(4),
+});
+
 export const bookSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
   author: z.string().min(2, "Author must be at least 2 characters"),
@@ -22,5 +27,6 @@ export const updateBookSchema = bookSchema
     message: "At least one field must be provided",
   });
 
+export type BookQueryDto = z.infer<typeof bookQuerySchema>;
 export type BookDto = z.infer<typeof bookSchema>;
 export type UpdateBookDto = z.infer<typeof updateBookSchema>;

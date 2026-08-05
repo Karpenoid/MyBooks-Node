@@ -1,20 +1,41 @@
 import { prisma } from "../lib/prisma.js";
 import type { BookDto, UpdateBookDto } from "../schemas/book.schema.js";
 import { ApiError } from "../utils/ApiError.js";
-import { cached, invalidate } from "../utils/redisWrap.js";
+import { cached, invalidate, invalidateByPattern } from "../utils/redisWrap.js";
 
 const CACHE_TTL = 60 * 5;
-export const BOOKS_CACHE_KEY = "books:all";
-const BOOK_CACHE_KEY = (id: string) => `books:${id}`;
+const BOOKS_CACHE_KEY = (page: number, limit: number) => `books:list:page=${page}:limit=${limit}`;
+export const BOOKS_CACHE_PATTERN = "books:list:*";
+const BOOK_CACHE_KEY = (id: string) => `books:details:${id}`;
+export const BOOK_DETAIL_CACHE_PATTERN = "books:details:*";
 
 export const bookService = {
-  getAll: async () => {
-    return cached(BOOKS_CACHE_KEY, CACHE_TTL, async () => {
-      const books = await prisma.book.findMany({ include: { genres: true } });
-      return books.map((book) => ({
-        ...book,
-        releaseDate: book.releaseDate?.toISOString().split("T")[0] ?? null,
-      }));
+  getAll: async (page: number, limit: number) => {
+    const skip = (page - 1) * limit;
+    return cached(BOOKS_CACHE_KEY(page, limit), CACHE_TTL, async () => {
+      const [books, total] = await Promise.all([
+        prisma.book.findMany({
+          include: { genres: true },
+          skip,
+          take: limit,
+          orderBy: { title: "asc" },
+        }),
+        prisma.book.count(),
+      ]);
+      const result = {
+        data: books.map((book) => ({
+          ...book,
+          releaseDate: book.releaseDate?.toISOString().split("T")[0] ?? null,
+        })),
+        meta: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+
+      return result;
     });
   },
 
@@ -59,7 +80,7 @@ export const bookService = {
       include: { genres: true },
     });
 
-    await invalidate(BOOKS_CACHE_KEY);
+    await invalidateByPattern(BOOKS_CACHE_PATTERN);
     return createdBook;
   },
 
@@ -90,7 +111,7 @@ export const bookService = {
       include: { genres: true },
     });
 
-    await invalidate(BOOKS_CACHE_KEY);
+    await invalidateByPattern(BOOKS_CACHE_PATTERN);
     await invalidate(BOOK_CACHE_KEY(id));
     return updatedBook;
   },
@@ -101,7 +122,7 @@ export const bookService = {
 
     const removedBook = await prisma.book.delete({ where: { id } });
 
-    await invalidate(BOOKS_CACHE_KEY);
+    await invalidateByPattern(BOOKS_CACHE_PATTERN);
     await invalidate(BOOK_CACHE_KEY(id));
     return removedBook;
   },

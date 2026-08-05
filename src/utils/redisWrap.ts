@@ -30,3 +30,14 @@ export async function invalidate(...keys: string[]) {
     console.error("Redis invalidate failed:", err);
   }
 }
+
+export async function invalidateByPattern(pattern: string) {
+  try {
+    const keys = await redisClient.keys(pattern);
+    if (keys.length > 0) {
+      await redisClient.del(keys);
+    }
+  } catch (err) {
+    console.error(`Redis pattern invalidate failed for ${pattern}:`, err);
+  }
+}

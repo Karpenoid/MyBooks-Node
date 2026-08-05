@@ -1,8 +1,8 @@
 import { prisma } from "../lib/prisma.js";
 import { ApiError } from "../utils/ApiError.js";
 import type { GenreDto } from "../schemas/genre.schema.js";
-import { BOOKS_CACHE_KEY } from "./book.service.js";
-import { cached, invalidate } from "../utils/redisWrap.js";
+import { BOOK_DETAIL_CACHE_PATTERN, BOOKS_CACHE_PATTERN } from "./book.service.js";
+import { cached, invalidate, invalidateByPattern } from "../utils/redisWrap.js";
 
 const CACHE_TTL = 60 * 60;
 const GENRES_CACHE_KEY = "genres:all";
@@ -42,7 +42,8 @@ export const genreService = {
 
     await invalidate(GENRES_CACHE_KEY);
     await invalidate(GENRE_CACHE_KEY(id));
-    await invalidate(BOOKS_CACHE_KEY);
+    await invalidateByPattern(BOOKS_CACHE_PATTERN);
+    await invalidateByPattern(BOOK_DETAIL_CACHE_PATTERN);
     return updatedGenre;
   },
 
@@ -54,7 +55,8 @@ export const genreService = {
 
     await invalidate(GENRES_CACHE_KEY);
     await invalidate(GENRE_CACHE_KEY(id));
-    await invalidate(BOOKS_CACHE_KEY);
+    await invalidateByPattern(BOOKS_CACHE_PATTERN);
+    await invalidateByPattern(BOOK_DETAIL_CACHE_PATTERN);
     return deletedGenre;
   },
 };
