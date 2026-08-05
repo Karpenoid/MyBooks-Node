@@ -25,6 +25,8 @@ jobs:
 
     - name: Generate Prisma Client
       run: npx prisma generate
+      env:
+        DATABASE_URL: "postgresql://fake:fake@localhost:5432/fake_db"
 
     - name: Run ESLint
       run: npm run lint
