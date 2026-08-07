@@ -1,4 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { Prisma, Book } from "@prisma/client";
+
+type BookWithGenres = Prisma.BookGetPayload<{
+  include: { genres: true };
+}>;
 
 vi.mock("../lib/prisma.js", () => ({
   prisma: {
@@ -41,8 +46,8 @@ describe("bookService", () => {
           releaseDate: null,
           pages: 688,
           genres: [],
-        },
-      ] as any);
+        } as BookWithGenres,
+      ]);
       vi.mocked(prisma.book.count).mockResolvedValue(1);
 
       const result = await bookService.getAll(1, 4);
@@ -72,7 +77,7 @@ describe("bookService", () => {
         releaseDate: null,
         pages: 688,
         genres: [],
-      } as any);
+      } as BookWithGenres);
 
       const result = await bookService.getById("uuid-1");
 
@@ -89,7 +94,7 @@ describe("bookService", () => {
         description: null,
         releaseDate: null,
         pages: 688,
-      } as any);
+      } as Book);
 
       await expect(
         bookService.createBook({
