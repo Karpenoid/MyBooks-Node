@@ -63,9 +63,9 @@ describe("bookService", () => {
     it("should throw 404 if book is not found", async () => {
       vi.mocked(prisma.book.findUnique).mockResolvedValue(null);
 
-      await expect(
-        bookService.getById("non-existent-id")
-      ).rejects.toMatchObject({ statusCode: 404 });
+      await expect(bookService.getById("non-existent-id")).rejects.toMatchObject({
+        statusCode: 404,
+      });
     });
 
     it("should return book if found", async () => {
@@ -101,7 +101,7 @@ describe("bookService", () => {
           title: "Dune",
           author: "Frank Herbert",
           genreIds: ["genre-uuid"],
-        })
+        }),
       ).rejects.toMatchObject({ statusCode: 409 });
     });
 
@@ -114,7 +114,7 @@ describe("bookService", () => {
           title: "Dune",
           author: "Frank Herbert",
           genreIds: ["non-existent-genre"],
-        })
+        }),
       ).rejects.toMatchObject({ statusCode: 404 });
     });
   });

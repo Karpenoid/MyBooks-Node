@@ -6,7 +6,8 @@ import { ApiError } from "../utils/ApiError.js";
 
 export const getBooks = catchAsync(async (req: Request, res: Response) => {
   const parsed = bookQuerySchema.safeParse(req.query);
-  if (!parsed.success) throw new ApiError(400, parsed.error.issues[0]?.message ?? "Validation error");
+  if (!parsed.success)
+    throw new ApiError(400, parsed.error.issues[0]?.message ?? "Validation error");
 
   const { page, limit } = parsed.data;
   const books = await bookService.getAll(page, limit);

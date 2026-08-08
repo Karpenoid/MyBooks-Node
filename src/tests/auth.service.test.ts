@@ -43,7 +43,7 @@ describe("authService", () => {
           email: "test@test.com",
           name: "Test",
           password: "123456",
-        })
+        }),
       ).rejects.toMatchObject({ statusCode: 409 });
     });
 
@@ -77,7 +77,7 @@ describe("authService", () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 
       await expect(
-        authService.login({ email: "notexist@test.com", password: "123456" })
+        authService.login({ email: "notexist@test.com", password: "123456" }),
       ).rejects.toMatchObject({ statusCode: 401 });
     });
 
@@ -94,7 +94,7 @@ describe("authService", () => {
       vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
 
       await expect(
-        authService.login({ email: "test@test.com", password: "wrongpassword" })
+        authService.login({ email: "test@test.com", password: "wrongpassword" }),
       ).rejects.toMatchObject({ statusCode: 401 });
     });
 
