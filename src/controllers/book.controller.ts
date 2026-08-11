@@ -9,8 +9,8 @@ export const getBooks = catchAsync(async (req: Request, res: Response) => {
   if (!parsed.success)
     throw new ApiError(400, parsed.error.issues[0]?.message ?? "Validation error");
 
-  const { page, limit } = parsed.data;
-  const books = await bookService.getAll(page, limit);
+  // const { page, limit, title, author, genreIds } = parsed.data;
+  const books = await bookService.getAll(parsed.data);
   res.status(200).json(books);
 });
 

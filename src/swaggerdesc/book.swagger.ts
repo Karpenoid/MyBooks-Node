@@ -9,7 +9,7 @@
  * @swagger
  * /api/books:
  *   get:
- *     summary: Get all books (paginated)
+ *     summary: Get all books (paginated, with optional filters)
  *     tags: [Books]
  *     parameters:
  *       - in: query
@@ -24,6 +24,24 @@
  *           type: integer
  *           default: 4
  *         description: Items per page (max 100)
+ *       - in: query
+ *         name: title
+ *         schema:
+ *           type: string
+ *         description: Filter by title (case-insensitive partial match)
+ *         example: dune
+ *       - in: query
+ *         name: author
+ *         schema:
+ *           type: string
+ *         description: Filter by author (case-insensitive partial match)
+ *         example: herbert
+ *       - in: query
+ *         name: genreIds
+ *         schema:
+ *           type: string
+ *         description: Filter by genre IDs (comma-separated UUIDs)
+ *         example: "550e8400-e29b-41d4-a716-446655440001,550e8400-e29b-41d4-a716-446655440002"
  *     responses:
  *       200:
  *         description: Paginated list of books

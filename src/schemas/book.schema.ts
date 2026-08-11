@@ -3,6 +3,9 @@ import z from "zod";
 export const bookQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(4),
+  title: z.string().optional(),
+  author: z.string().optional(),
+  genreIds: z.string().optional(),
 });
 
 export const bookSchema = z.object({

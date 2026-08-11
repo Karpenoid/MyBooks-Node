@@ -50,7 +50,7 @@ describe("bookService", () => {
       ]);
       vi.mocked(prisma.book.count).mockResolvedValue(1);
 
-      const result = await bookService.getAll(1, 4);
+      const result = await bookService.getAll({ page: 1, limit: 4 });
 
       expect(result.data).toHaveLength(1);
       expect(result.meta.total).toBe(1);

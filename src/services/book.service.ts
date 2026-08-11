@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma.js";
-import type { BookDto, UpdateBookDto } from "../schemas/book.schema.js";
+import type { BookDto, BookQueryDto, UpdateBookDto } from "../schemas/book.schema.js";
 import { ApiError } from "../utils/ApiError.js";
 import { cached, invalidate, invalidateByPattern } from "../utils/redisWrap.js";
 
@@ -10,17 +10,45 @@ const BOOK_CACHE_KEY = (id: string) => `books:details:${id}`;
 export const BOOK_DETAIL_CACHE_PATTERN = "books:details:*";
 
 export const bookService = {
-  getAll: async (page: number, limit: number) => {
+  getAll: async (query: BookQueryDto) => {
+    const { page, limit, title, author, genreIds } = query;
     const skip = (page - 1) * limit;
-    return cached(BOOKS_CACHE_KEY(page, limit), CACHE_TTL, async () => {
+
+    const parsedGenreIds = genreIds ? genreIds.split(",").map((id) => id.trim()) : undefined;
+
+    if (parsedGenreIds) {
+      const existingGenres = await prisma.genre.findMany({
+        where: { id: { in: parsedGenreIds } },
+        select: { id: true },
+      });
+      if (existingGenres.length !== parsedGenreIds.length)
+        throw new ApiError(404, "One or more genres not found");
+    }
+
+    const cacheKey =
+      BOOKS_CACHE_KEY(page, limit) +
+      (title ? `:title=${title}` : "") +
+      (author ? `:author=${author}` : "") +
+      (parsedGenreIds ? `:genres=${parsedGenreIds.join(",")}` : "");
+
+    return cached(cacheKey, CACHE_TTL, async () => {
+      const where = {
+        ...(title && { title: { contains: title, mode: "insensitive" as const } }),
+        ...(author && { author: { contains: author, mode: "insensitive" as const } }),
+        ...(parsedGenreIds && {
+          genres: { some: { id: { in: parsedGenreIds } } },
+        }),
+      };
+
       const [books, total] = await Promise.all([
         prisma.book.findMany({
+          where,
           include: { genres: true },
           skip,
           take: limit,
           orderBy: { title: "asc" },
         }),
-        prisma.book.count(),
+        prisma.book.count({ where }),
       ]);
       const result = {
         data: books.map((book) => ({
